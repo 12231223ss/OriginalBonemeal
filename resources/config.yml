@@ -1,0 +1,13 @@
+chance:
+  mega_tree_regular: 0.25
+uses_permissions: false
+
+crops:
+- crops
+- carrot
+- potato
+- beetroot_block
+
+stems:
+- melon_stem
+- pumpkin_stem
