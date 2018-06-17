@@ -43,7 +43,7 @@ public class Utils {
         Tree tree = new Tree(id, data);
         TreeSpecies species = tree.getSpecies();
 
-        TreeType type = null;
+        TreeType type;
 
         switch (species) {
             case BIRCH:
@@ -96,6 +96,14 @@ public class Utils {
         else return placePumpkinOrMelon(block);
     }
 
+    /* generateLargeTree(Block block, TreeType typeSmall, TreeType typeLarge)
+     * this method will generate one of those massive trees
+     *
+     * block - the location of the block that contains one of the saplings
+     * typeSmall - the type of tree to be grown if it can't find a group of four
+     * typeLarge - the type of tree to be grown if it can find a group of four
+     * returns the success of the operation.
+     */
     private static boolean generateLargeTree(Block block, TreeType typeSmall, TreeType typeLarge) {
         int typeid = block.getTypeId();
         byte data = block.getData();
@@ -117,6 +125,13 @@ public class Utils {
         return true;
     }
 
+    /* getFourGroup(Block block)
+     * this method will attempts to find a group of four saplings used to generate large jungle trees.
+     * in future versions of MineCraft, this function will also be able to determine groups of four saplings in general
+     *
+     * block - the location of the block that was clicked - this block is a sapling
+     * returns null for no group of four found or an array containing the four saplings in the group
+     */
     private static Block[] getFourGroup(Block block) {
         Block[] blocks = {block, null, null, null};
 
@@ -145,6 +160,12 @@ public class Utils {
         return null;
     }
 
+    /* getNorthWestBlock(Block b1, Block b2, Block b3, Block b4)
+     * this method will determine the block at the northwest corner of a 2x2 square of blocks
+     *
+     * b1 - b4: the blocks in the square
+     * returns the block at the north west corner
+     */
     private static Block getNorthWestBlock(Block b1, Block b2, Block b3, Block b4) {
         Block grow_location = b1.getRelative(BlockFace.NORTH).equals(b2) ? b2
                 : b1.getRelative(BlockFace.NORTH).equals(b3) ? b3
@@ -158,6 +179,12 @@ public class Utils {
         return grow_location;
     }
 
+    /* placeBlock(Block block)
+     * this method will generate the pumpkin or melon from a stem that has been previously grown
+     *
+     * block - the stem of the melon or pumpkin to be placed
+     * returns the success of the operation.
+     */
     private static boolean placePumpkinOrMelon(Block block) {
         World world = block.getWorld();
         BlockFace faces[] = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};

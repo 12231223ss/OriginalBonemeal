@@ -6,6 +6,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
+import org.bukkit.block.Dropper;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -79,28 +80,59 @@ public class EventListener implements Listener {
         }
 
         if (usedBonemeal) {
-            Dispenser dispenser = (Dispenser) e.getBlock().getState();
-            final Inventory dispenserInventory = dispenser.getInventory();
+            Block block = e.getBlock();
+            Material blockType = block.getType();
+            final Inventory blockInventory;
 
-            ItemStack[] items = dispenserInventory.getStorageContents();
-            int totalItems = 0;
+            if (blockType == Material.DISPENSER) {
+                Dispenser dispenser = (Dispenser) block.getState();
+                blockInventory = dispenser.getInventory();
+            }
+            else if (blockType == Material.DROPPER){
+                Dropper dropper = (Dropper) block.getState();
+                blockInventory = dropper.getInventory();
+            }
+            else return;
 
+            ItemStack[] items = blockInventory.getStorageContents();
+            int StacksInInv = 0;
+            int TotalDropperItems = 1;
+
+            /* Get the amount of stacks in the dispenser/dropper
+            *  Also the total item amount in case of a dropper as
+            *  it only uses 1 item at a time from a stack
+            */
             for (ItemStack itemObj : items) {
                 if (itemObj != null && itemObj.getAmount() > 0) {
-                    totalItems++;
+                    StacksInInv++;
+                    TotalDropperItems += itemObj.getAmount();
                 }
             }
 
-            if (totalItems > 1 || (totalItems == 1 && item.getAmount() > 1)) {
-                ItemStack newStack = item;
+            if ((blockType == Material.DROPPER && TotalDropperItems > 1) || (blockType == Material.DISPENSER && item.getAmount() > 1)) {
+                final ItemStack newStack = item;
                 newStack.setAmount(1);
-                dispenserInventory.removeItem(newStack);
+
+                // Need to wait 1 tick to remove the second last item from the dropper
+                if (blockType == Material.DROPPER && TotalDropperItems == 2) {
+                    getServer().getScheduler().scheduleSyncDelayedTask(bonemealPlugin, new Runnable() {
+
+                        public void run() {
+                            blockInventory.removeItem(newStack);
+                        }
+
+                    }, 1);
+                }
+                else {
+                    blockInventory.removeItem(newStack);
+                }
             }
-            else if (totalItems == 1 && item.getAmount() == 1) {
+            // Need to wait 1 tick to remove the last item
+            else if ((blockType == Material.DROPPER && TotalDropperItems == 1) || (blockType == Material.DISPENSER && StacksInInv == 1 && item.getAmount() == 1)) {
                 getServer().getScheduler().scheduleSyncDelayedTask(bonemealPlugin, new Runnable() {
 
                     public void run() {
-                        dispenserInventory.clear();
+                        blockInventory.clear();
                     }
 
                 }, 1);
